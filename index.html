@@ -1,96 +1,4 @@
-from flask import Flask, render_template_string, request, jsonify, send_from_directory
-import os
-import random
-import time
-import logging
-from werkzeug.utils import secure_filename
-import uuid
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Allowed image extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def authenticate_watch(filename):
-    """模拟 AI 鉴定逻辑"""
-    logger.info(f"开始鉴定手表图片: {filename}")
-    start_time = time.time()
-    
-    # 模拟 AI 分析耗时
-    time.sleep(random.uniform(1.0, 2.0))
-    
-    analysis_time = time.time() - start_time
-    
-    # 生成鉴定结果
-    is_authentic = random.choice([True, True, True, False, True])  # 80%正品率
-    brands = [
-        {"name": "劳力士 (Rolex)", "model": "Submariner", "year": "2023"},
-        {"name": "百达翡丽 (Patek Philippe)", "model": "Calatrava", "year": "2022"},
-        {"name": "欧米茄 (Omega)", "model": "Speedmaster", "year": "2023"},
-        {"name": "卡地亚 (Cartier)", "model": "Tank", "year": "2022"},
-        {"name": "万国 (IWC)", "model": "Portuguese", "year": "2023"},
-        {"name": "江诗丹顿 (Vacheron Constantin)", "model": "Patrimony", "year": "2023"},
-        {"name": "爱彼 (Audemars Piguet)", "model": "Royal Oak", "year": "2022"}
-    ]
-    
-    selected_brand = random.choice(brands)
-    
-    # 生成详细鉴定报告
-    if is_authentic:
-        details = [
-            "表盘字体边缘清晰，字符间距均匀",
-            "指针打磨符合原厂工艺标准",
-            "机芯避震器结构与正品一致",
-            "序列号与官方数据库匹配",
-            "表冠纹理精细度符合品牌标准",
-            "表带连接处无明显加工痕迹"
-        ]
-        status_text = "正品 (Authentic)"
-        color_class = "text-green-600"
-        confidence = f"{random.uniform(96.0, 99.9):.1f}%"
-    else:
-        fake_details = [
-            "表盘夜光涂层颜色存在明显色差",
-            "表壳倒角打磨工艺粗糙",
-            "机芯游丝材质与正品不符",
-            "序列号格式与官方记录不匹配",
-            "表冠标志刻字深度异常",
-            "表带连接件材质偏软"
-        ]
-        # 随机选择3-4个问题点
-        details = random.sample(fake_details, random.randint(3, 4))
-        status_text = "疑似仿品 (Fake/Replica)"
-        color_class = "text-red-600"
-        confidence = f"{random.uniform(60.0, 85.0):.1f}%"
-    
-    result = {
-        "status": status_text,
-        "brand": selected_brand["name"],
-        "model": selected_brand["model"],
-        "year": selected_brand["year"],
-        "confidence": confidence,
-        "details": details,
-        "color": color_class,
-        "analysis_time": f"{analysis_time:.2f}s",
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
-    }
-    
-    logger.info(f"鉴定完成: {filename}, 结果: {status_text}")
-    return result
-
-# HTML Template with Tailwind CSS
-HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -293,7 +201,7 @@ HTML_TEMPLATE = '''
                 uploadArea.innerHTML = `
                     <div class="text-center">
                         <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
-                        <p class="text-gray-800 font-medium">${fileName}</p>
+                        <p class="text-gray-800 font-medium">\${fileName}</p>
                         <p class="text-sm text-gray-600">已选择文件</p>
                     </div>
                 `;
@@ -371,44 +279,71 @@ HTML_TEMPLATE = '''
                     progress = 100;
                     clearInterval(interval);
                 }
-                progressBar.style.width = `${progress}%`;
-                progressText.textContent = `${Math.round(progress)}%`;
+                progressBar.style.width = `\${progress}%`;
+                progressText.textContent = `\${Math.round(progress)}%`;
             }, 200);
 
-            // Prepare form data
-            const formData = new FormData();
-            formData.append('watch_image', file);
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
+            // Simulate API call for demonstration
+            setTimeout(() => {
                 clearInterval(interval);
                 progressBar.style.width = '100%';
                 progressText.textContent = '100%';
-
-                if (response.ok) {
-                    const result = await response.json();
-                    displayResults(result);
-                } else {
-                    const error = await response.json();
-                    alert(error.error || '上传失败');
-                    resetProgress();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('网络错误，请稍后重试');
-                resetProgress();
-            }
+                
+                // Generate mock result
+                const brands = [
+                    {"name": "劳力士 (Rolex)", "model": "Submariner", "year": "2023"},
+                    {"name": "百达翡丽 (Patek Philippe)", "model": "Calatrava", "year": "2022"},
+                    {"name": "欧米茄 (Omega)", "model": "Speedmaster", "year": "2023"},
+                    {"name": "卡地亚 (Cartier)", "model": "Tank", "year": "2022"},
+                    {"name": "万国 (IWC)", "model": "Portuguese", "year": "2023"},
+                    {"name": "江诗丹顿 (Vacheron Constantin)", "model": "Patrimony", "year": "2023"},
+                    {"name": "爱彼 (Audemars Piguet)", "model": "Royal Oak", "year": "2022"}
+                ];
+                
+                const brand = brands[Math.floor(Math.random() * brands.length)];
+                
+                // Randomly determine authenticity (80% chance of being authentic)
+                const isAuthentic = Math.random() < 0.8;
+                const result = {
+                    status: isAuthentic ? "正品 (Authentic)" : "疑似仿品 (Fake/Replica)",
+                    brand: brand.name,
+                    model: brand.model,
+                    year: brand.year,
+                    confidence: isAuthentic ? 
+                        `\${(Math.random() * 3.9 + 96).toFixed(1)}%` : 
+                        `\${(Math.random() * 25 + 60).toFixed(1)}%`,
+                    details: isAuthentic ? [
+                        "表盘字体边缘清晰，字符间距均匀",
+                        "指针打磨符合原厂工艺标准",
+                        "机芯避震器结构与正品一致",
+                        "序列号与官方数据库匹配",
+                        "表冠纹理精细度符合品牌标准",
+                        "表带连接处无明显加工痕迹"
+                    ] : [
+                        "表盘夜光涂层颜色存在明显色差",
+                        "表壳倒角打磨工艺粗糙",
+                        "机芯游丝材质与正品不符",
+                        "序列号格式与官方记录不匹配",
+                        "表冠标志刻字深度异常",
+                        "表带连接件材质偏软"
+                    ],
+                    color: isAuthentic ? "text-green-600" : "text-red-600",
+                    analysis_time: `\${(Math.random() * 1.5 + 0.5).toFixed(2)}s`
+                };
+                
+                // Create a temporary object URL for the image
+                const objectUrl = URL.createObjectURL(file);
+                
+                // Display results
+                displayResults({...result, image_url: objectUrl});
+            }, 2000);
         });
 
         function displayResults(result) {
             // Update result section
             document.getElementById('resultImage').src = result.image_url;
             document.getElementById('statusText').textContent = result.status;
-            document.getElementById('statusBadge').className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${result.color}`;
+            document.getElementById('statusBadge').className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium \${result.color}`;
             
             if (result.status.includes('正品')) {
                 document.getElementById('statusBadge').innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + result.status;
@@ -420,7 +355,7 @@ HTML_TEMPLATE = '''
             document.getElementById('modelResult').textContent = result.model || 'N/A';
             document.getElementById('yearResult').textContent = result.year || 'N/A';
             document.getElementById('confidenceResult').textContent = result.confidence;
-            document.getElementById('analysisTime').textContent = `耗时: ${result.analysis_time}`;
+            document.getElementById('analysisTime').textContent = `耗时: \${result.analysis_time}`;
 
             // Update details list
             const detailsList = document.getElementById('detailsList');
@@ -428,7 +363,7 @@ HTML_TEMPLATE = '''
             result.details.forEach(detail => {
                 const li = document.createElement('li');
                 li.className = 'detail-item flex items-start';
-                li.innerHTML = `<i class="fas fa-chevron-right text-blue-500 mr-2 mt-1 text-xs"></i><span class="text-gray-700">${detail}</span>`;
+                li.innerHTML = `<i class="fas fa-chevron-right text-blue-500 mr-2 mt-1 text-xs"></i><span class="text-gray-700">\${detail}</span>`;
                 detailsList.appendChild(li);
             });
 
@@ -459,43 +394,6 @@ HTML_TEMPLATE = '''
     </script>
 </body>
 </html>
-'''
 
-@app.route('/')
-def index():
-    return render_template_string(HTML_TEMPLATE)
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'watch_image' not in request.files:
-        return jsonify({'error': '未检测到图片'}), 400
-        
-    file = request.files['watch_image']
-    if file.filename == '':
-        return jsonify({'error': '未选择文件'}), 400
-    
-    if not allowed_file(file.filename):
-        return jsonify({'error': '不支持的文件类型'}), 400
-        
-    # Secure filename and save
-    filename = secure_filename(file.filename)
-    unique_filename = f"{uuid.uuid4()}_{filename}"
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-    file.save(filepath)
-    
-    # Execute authentication
-    result = authenticate_watch(unique_filename)
-    result['image_url'] = f"/uploads/{unique_filename}"
-    
-    return jsonify(result)
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-if __name__ == '__main__':
-    print("="*50)
-    print("专业手表AI鉴定系统已启动")
-    print("访问地址: http://127.0.0.1:5000")
-    print("="*50)
-    app.run(debug=True, host='0.0.0.0', port=5000)
